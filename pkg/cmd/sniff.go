@@ -155,6 +155,10 @@ func NewCmdSniff(streams genericclioptions.IOStreams) *cobra.Command {
 	_ = viper.BindEnv("serviceaccount", "KUBECTL_PLUGINS_LOCAL_FLAG_SERVICE_ACCOUNT")
 	_ = viper.BindPFlag("serviceaccount", cmd.Flags().Lookup("serviceaccount"))
 
+	cmd.Flags().StringVar(&ksniffSettings.UserSpecifiedImagePullSecret, "imagepullsecret", "",
+		"the privileged container image pull secret (optional)")
+	_ = viper.BindEnv("imagepullsecret", "KUBECTL_PLUGINS_LOCAL_FLAG_IMAGE_PULL_SECRET")
+	_ = viper.BindPFlag("imagepullsecret", cmd.Flags().Lookup("imagepullsecret"))
 	return cmd
 }
 
@@ -187,6 +191,7 @@ func (o *Ksniff) Complete(cmd *cobra.Command, args []string) error {
 	o.settings.UseDefaultTCPDumpImage = !viper.IsSet("tcpdump-image")
 	o.settings.UseDefaultSocketPath = !viper.IsSet("socket")
 	o.settings.UserSpecifiedServiceAccount = viper.GetString("serviceaccount")
+	o.settings.UserSpecifiedImagePullSecret = viper.GetString("imagepullsecret")
 
 	var err error
 

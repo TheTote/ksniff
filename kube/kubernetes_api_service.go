@@ -25,7 +25,7 @@ type KubernetesApiService interface {
 
 	DeletePod(podName string) error
 
-	CreatePrivilegedPod(nodeName string, containerName string, image string, socketPath string, timeout time.Duration, serviceaccount string) (*corev1.Pod, error)
+	CreatePrivilegedPod(nodeName string, containerName string, image string, socketPath string, timeout time.Duration, serviceaccount string, imagepullsecret string) (*corev1.Pod, error)
 
 	UploadFile(localPath string, remotePath string, podName string, containerName string) error
 }
@@ -102,7 +102,7 @@ func (k *KubernetesApiServiceImpl) DeletePod(podName string) error {
 	return err
 }
 
-func (k *KubernetesApiServiceImpl) CreatePrivilegedPod(nodeName string, containerName string, image string, socketPath string, timeout time.Duration, serviceaccount string) (*corev1.Pod, error) {
+func (k *KubernetesApiServiceImpl) CreatePrivilegedPod(nodeName string, containerName string, image string, socketPath string, timeout time.Duration, serviceaccount string, imagepullsecret string) (*corev1.Pod, error) {
 	log.Debugf("creating privileged pod on remote node")
 
 	isSupported, err := k.IsSupportedContainerRuntime(nodeName)
@@ -196,6 +196,14 @@ func (k *KubernetesApiServiceImpl) CreatePrivilegedPod(nodeName string, containe
 
 	if serviceaccount != "" {
 		podSpecs.ServiceAccountName = serviceaccount
+	}
+
+	if imagepullsecret != "" {
+		podSpecs.ImagePullSecrets = []corev1.LocalObjectReference{
+			{
+				Name: imagepullsecret,
+			},
+		}
 	}
 
 	pod := corev1.Pod{
