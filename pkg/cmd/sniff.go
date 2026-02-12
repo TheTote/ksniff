@@ -347,6 +347,18 @@ func (o *Ksniff) findContainerId(pod *corev1.Pod) error {
 		}
 	}
 
+	for _, containerStatus := range pod.Status.InitContainerStatuses {
+		if o.settings.UserSpecifiedContainer == containerStatus.Name {
+			result := strings.Split(containerStatus.ContainerID, "://")
+			if len(result) != 2 {
+				break
+			}
+			o.settings.DetectedContainerRuntime = result[0]
+			o.settings.DetectedContainerId = result[1]
+			return nil
+		}
+	}
+
 	return errors.Errorf("couldn't find container: '%s' in pod: '%s'", o.settings.UserSpecifiedContainer, o.settings.UserSpecifiedPodName)
 }
 
